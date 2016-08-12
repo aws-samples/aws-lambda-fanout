@@ -5,15 +5,16 @@
     }, 
     "bugs": {
         "email": "lepine@amazon.fr", 
-        "url": "http://github.com/awslabs/aws-lambda-kinesis-fanout/issues"
+        "url": "http://github.com/awslabs/aws-lambda-fanout/issues"
     }, 
     "dependencies": {
-        "aws-kpl-deagg": "2.1.1",
+        "aws-kinesis-agg": "2.2.2",
         "async": "1.5.2"
     }, 
     "description": "An Amazon Kinesis Streams and Amazon DynamoDB Streams pipeline written for AWS Lambda", 
     "devDependencies": {
-        "mocha": "2.4.5"
+        "mocha": "2.4.5",
+        "aws-sdk": "2.2.19"
     }, 
     "files": [
         "lib/configuration.js", 
@@ -40,7 +41,7 @@
         "LICENSE", 
         "README.md"
     ], 
-    "homepage": "http://github.com/awslabs/aws-lambda-kinesis-fanout", 
+    "homepage": "http://github.com/awslabs/aws-lambda-fanout", 
     "keywords": [
         "amazon", 
         "kinesis", 
@@ -57,10 +58,10 @@
     ], 
     "license": "SEE LICENSE IN LICENSE.txt", 
     "main": "./fanout.js", 
-    "name": "aws-lambda-kinesis-fanout", 
+    "name": "aws-lambda-fanout", 
     "repository": {
         "type": "git", 
-        "url": "http://github.com/awslabs/aws-lambda-kinesis-fanout"
+        "url": "http://github.com/awslabs/aws-lambda-fanout"
     }, 
     "version": "1.0.0"
 }

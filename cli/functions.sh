@@ -219,6 +219,7 @@ function deployFanout {
   if [ -f "fanout.zip" ]; then
     rm fanout.zip
   fi
+  npm install
   zip -q -r fanout.zip fanout.js node_modules lib
 
   if [ -z "$FUNCTION_ARN" ]; then

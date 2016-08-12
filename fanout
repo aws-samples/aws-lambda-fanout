@@ -1,0 +1,400 @@
+#!/bin/bash
+# AWS Lambda Fan-Out Utility
+# 
+# Copyright 2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# 
+# Licensed under the Apache License, Version 2.0 (the "License").
+# You may not use this file except in compliance with the License.
+# A copy of the License is located at
+# 
+#  http://aws.amazon.com/apache2.0
+# 
+# or in the "license" file accompanying this file. This file is distributed
+# on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+# express or implied. See the License for the specific language governing
+# permissions and limitations under the License.
+
+#
+# This script is the main script for the command line utility
+#
+
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+source "$DIR/cli/awscli.sh"
+source "$DIR/cli/functions.sh"
+source "$DIR/cli/targets.sh"
+source "$DIR/cli/help.sh"
+
+## Locates a destination AWS Lambda Function
+function checkLambdaTarget {
+  if [ ! -z "$DESTINATION_NAME" ]; then
+    DESTINATION_ID=$( echo "$DESTINATION_NAME" | sed -E -n 's#^arn:aws:lambda:[a-z]+-[a-z]+-[0-9]:[0-9]{12}:function:([a-zA-Z0-9_-]{1,64})$#\1#p' )
+    if [ -z "${DESTINATION_ID}" ]; then
+      if [ ! -z "${DESTINATION_ROLE}" ]; then
+        echo "Invalid ARN '${DESTINATION_NAME}', must be a fully qualified AWS Lambda Function ARN" 1>&2
+        echo " - You specified a Role ARN, and name expansion can only be made on functions within your local user" 1>&2
+        exit -1
+      else
+        DESTINATION_ID=$(aws lambda "get-function" --function-name ${DESTINATION_NAME} --no-paginate --query 'Configuration.FunctionArn' --output text ${DESTINATION_SEARCH_ARGS[@]} 2> /dev/null | sed -E -n 's#^arn:aws:lambda:[a-z]+-[a-z]+-[0-9]:[0-9]{12}:function:([a-zA-Z0-9_-]{1,64})$#\1#p' )
+        if [ -z "${DESTINATION_ID}" ]; then
+          echo "Can not find function with name '${DESTINATION_NAME}' in the local account" 1>&2
+          exit -1
+        fi
+      fi
+    fi
+  fi
+}
+
+## Locates a destination Amazon Kinesis Stream
+function checkKinesisTarget {
+  if [ ! -z "$DESTINATION_NAME" ]; then
+    DESTINATION_ID=$( echo "$DESTINATION_NAME" | sed -E -n 's#^arn:aws:kinesis:[a-z]+-[a-z]+-[0-9]:[0-9]{12}:stream/([a-zA-Z0-9_-]{1,128})$#\1#p' )
+    if [ -z "${DESTINATION_ID}" ]; then
+      if [ ! -z "${DESTINATION_ROLE}" ]; then
+        echo "Invalid ARN '${DESTINATION_NAME}', must be a fully qualified Amazon Kinesis Stream ARN" 1>&2
+        echo " - You specified a Role ARN, and name expansion can only be made on streams within your local user" 1>&2
+        exit -1
+      else
+        DESTINATION_ID=$(aws kinesis describe-stream --stream-name ${DESTINATION_NAME} --no-paginate --query 'StreamDescription.StreamARN' --output text ${DESTINATION_SEARCH_ARGS[@]} 2> /dev/null  | sed -E -n 's#^arn:aws:kinesis:[a-z]+-[a-z]+-[0-9]:[0-9]{12}:stream/([a-zA-Z0-9_-]{1,128})$#\1#p')
+        if [ -z "${DESTINATION_ID}" ]; then
+          echo "Can not find stream with name '${DESTINATION_NAME}' in the local account" 1>&2
+          exit -1
+        fi
+      fi
+    fi
+  fi
+}
+
+## Locates a destination Amazon Kinesis Firehose Delivery Stream
+function checkFirehoseTarget {
+  if [ ! -z "$DESTINATION_NAME" ]; then
+    DESTINATION_ID=$( echo "$DESTINATION_NAME" | sed -E -n 's#^arn:aws:firehose:[a-z]+-[a-z]+-[0-9]:[0-9]{12}:deliverystream/([a-zA-Z0-9_-]{1,64})$#\1#p' )
+    if [ -z "${DESTINATION_ID}" ]; then
+      if [ ! -z "${DESTINATION_ROLE}" ]; then
+        echo "Invalid ARN '${DESTINATION_NAME}', must be a fully qualified Amazon Kinesis Firehose Delivery Stream ARN" 1>&2
+        echo " - You specified a Role ARN, and name expansion can only be made on streams within your local user" 1>&2
+        exit -1
+      else
+        DESTINATION_ID=$(aws firehose describe-delivery-stream --delivery-stream-name ${DESTINATION_NAME} --query 'DeliveryStreamDescription.DeliveryStreamARN' --output text ${DESTINATION_SEARCH_ARGS[@]} 2> /dev/null | sed -E -n 's#^arn:aws:firehose:[a-z]+-[a-z]+-[0-9]:[0-9]{12}:deliverystream/([a-zA-Z0-9_-]{1,64})$#\1#p' )
+        if [ -z "${DESTINATION_ID}" ]; then
+          echo "Can not find stream with name '${DESTINATION_NAME}' in the local account" 1>&2
+          exit -1
+        fi
+      fi
+    fi
+  fi
+}
+
+## Locates a destination Amazon SQS Queue
+function checkSqsTarget {
+  if [ ! -z "$DESTINATION_NAME" ]; then
+    DESTINATION_ID=$( echo "$DESTINATION_NAME" | grep -E -e '^https://((queue)|(sqs\.[a-z]+-[a-z]+-[0-9]))\.amazonaws\.com/[0-9]{12}/[a-zA-Z0-9_-]{1,80}$' )
+    if [ -z "${DESTINATION_ID}" ]; then
+      if [ ! -z "${DESTINATION_ROLE}" ]; then
+        echo "Invalid url '${DESTINATION_NAME}', must be a fully qualified Amazon SQS Queue Url" 1>&2
+        echo " - You specified a Role ARN, and name expansion can only be made on queues within your local user" 1>&2
+        exit -1
+      else
+        DESTINATION_ID=$(aws sqs get-queue-url --queue-name ${DESTINATION_NAME} --query 'QueueUrl' --output text ${DESTINATION_SEARCH_ARGS[@]} 2> /dev/null)
+        if [ -z "${DESTINATION_ID}" ]; then
+          echo "Can not find queue with name '${DESTINATION_NAME}' in the local account" 1>&2
+          exit -1
+        fi
+      fi
+    fi
+  fi
+}
+
+## Locates a destination Amazon IoT MQTT Topic
+function checkIotTarget {
+  if [ ! -z "$DESTINATION_NAME" ]; then
+    DESTINATION_ID=$( echo "$DESTINATION_NAME" | grep -E '^[a-zA-Z0-9-]+\.iot\.[a-z]+-[a-z]+-[0-9]\.amazonaws\.com#.*$' )
+    if [ -z "${DESTINATION_ID}" ]; then
+      if [ ! -z "${DESTINATION_ROLE}" ]; then
+        echo "Invalid configuration '${DESTINATION_NAME}', must be a fully qualified Amazon IoT Endpoint followed by an MQTT topic name (separated by #)" 1>&2
+        echo " - You specified a Role ARN, and name expansion can only be made on topics within your local user" 1>&2
+        exit -1
+      else
+        DESTINATION_ID="$(aws iot describe-endpoint --output text ${DESTINATION_SEARCH_ARGS[@]})#${DESTINATION_NAME}"
+      fi
+    fi
+  fi
+}
+
+## Locates a destination Amazon SNS Topic
+function checkSnsTarget {
+  if [ ! -z "$DESTINATION_NAME" ]; then
+    DESTINATION_ID=$( echo "$DESTINATION_NAME" | grep -E -e '^arn:aws:sns:[a-z]+-[a-z]+-[0-9]:[0-9]{12}:[a-zA-Z0-9_-][a-zA-Z0-9_-]{0,255}$' )
+    if [ -z "${DESTINATION_ID}" ]; then
+      if [ ! -z "${DESTINATION_ROLE}" ]; then
+        echo "Invalid ARN '${DESTINATION_NAME}', must be a fully qualified Amazon SNS Topic ARN" 1>&2
+        echo " - You specified a Role ARN, and name expansion can only be made on topics within your local user" 1>&2
+        exit -1
+      else
+        DESTINATION_ID=$(aws sns list-topics --query "Topics[?ends_with(TopicArn,\`:${DESTINATION_NAME}\`)].TopicArn" --no-paginate --output text ${DESTINATION_SEARCH_ARGS[@]} 2> /dev/null)
+        if [ -z "${DESTINATION_ID}" ]; then
+          echo "Can not find topic with name '${DESTINATION_NAME}' in the local account" 1>&2
+          exit -1
+        fi
+      fi
+    fi
+  fi
+}
+
+## Locates a destination Amazon ElastiCache Memcached Cluster
+function checkMemcachedTarget {
+  if [ ! -z "$DESTINATION_NAME" ]; then
+    DESTINATION_ID=$( echo "$DESTINATION_NAME" | grep -E -e '^[a-zA-Z][a-zA-Z0-9-]{0,19}\.[a-z0-9]+\.cfg\.[a-z]+[0-9]\.cache\.amazonaws\.com:[0-9]+$' )
+    if [ -z "${DESTINATION_ID}" ]; then
+      if [ ! -z "${DESTINATION_ROLE}" ]; then
+        echo "Invalid endpoint '${DESTINATION_NAME}', must be a valid Amazon ElastiCache cluster endpoint in the format <configuration-endpoint>:<port>" 1>&2
+        echo " - You specified a Role ARN, and name expansion can only be made on topics within your local user" 1>&2
+        exit -1
+      else
+        DESTINATION_ID=$(aws elasticache describe-cache-clusters --cache-cluster-id ${DESTINATION_NAME} --query 'CacheClusters[0].ConfigurationEndpoint.[Address,to_string(Port)] | join(`:`, @)' --no-paginate --output text ${DESTINATION_SEARCH_ARGS[@]} 2> /dev/null)
+        if [ -z "${DESTINATION_ID}" ]; then
+          echo "Can not find topic with name '${DESTINATION_NAME}' in the local account" 1>&2
+          exit -1
+        fi
+      fi
+    fi
+  fi
+}
+
+## Locates a destination Amazon ElastiCache Redis Replication Group
+function checkRedisTarget {
+  if [ ! -z "$DESTINATION_NAME" ]; then
+    DESTINATION_ID=$( echo "$DESTINATION_NAME" | grep -E -e '^[a-zA-Z][a-zA-Z0-9-]{0,19}\.[a-z0-9]+\.ng\.[0-9]+\.[a-z]+[0-9]\.cache\.amazonaws\.com:[0-9]+$' )
+    if [ -z "${DESTINATION_ID}" ]; then
+      if [ ! -z "${DESTINATION_ROLE}" ]; then
+        echo "Invalid endpoint '${DESTINATION_NAME}', must be a valid Amazon ElastiCache replication group primary endpoint in the format <primary-endpoint>:<port>" 1>&2
+        echo " - You specified a Role ARN, and name expansion can only be made on clusters within your local user" 1>&2
+        exit -1
+      else
+        DESTINATION_ID=$(aws elasticache describe-replication-groups --replication-group-id ${DESTINATION_NAME} --query 'ReplicationGroups[0].NodeGroups[0].PrimaryEndpoint.[Address,to_string(Port)] | join(`:`, @)' --no-paginate --output text ${DESTINATION_SEARCH_ARGS[@]} 2> /dev/null)
+        if [ -z "${DESTINATION_ID}" ]; then
+          echo "Can not find cluster with name '${DESTINATION_NAME}' in the local account" 1>&2
+          exit -1
+        fi
+      fi
+    fi
+  fi
+}
+
+## Locates a destination Amazon ElasticSearch Domain and Index
+function checkEsTarget {
+  if [ ! -z "$DESTINATION_NAME" ]; then
+    DESTINATION_ID=$( echo "$DESTINATION_NAME" | grep -E -e '^search-[a-z][a-z0-9-]{2,27}-[a-z0-9]+\.[a-z]+-[a-z]+-[0-9]\.es\.amazonaws\.com#.*$' )
+    if [ -z "${DESTINATION_ID}" ]; then
+      if [ ! -z "${DESTINATION_ROLE}" ]; then
+        echo "Invalid endpoint '${DESTINATION_NAME}', must be a fully qualified Amazon Elasticsearch Service Domain endpoint followed by '#' then the index name" 1>&2
+        echo " - You specified a Role ARN, and name expansion can only be made on domains within your local user" 1>&2
+        exit -1
+      else
+        if [ -z "${DESTINATION_INDEX}" ]; then
+          echo "Invalid parameters, you must specify --index" 1>&2
+          exit -1
+        fi
+        DESTINATION_ENDPOINT=$(aws es describe-elasticsearch-domain --domain-name ${DESTINATION_NAME} --query 'DomainStatus.Endpoint' --output text ${DESTINATION_SEARCH_ARGS[@]} 2> /dev/null)
+        if [ -z "${DESTINATION_ENDPOINT}" ]; then
+          echo "Can not find domain with name '${DESTINATION_NAME}' in the local account" 1>&2
+          exit -1
+        fi
+        DESTINATION_ID="${DESTINATION_ENDPOINT}#${DESTINATION_INDEX}"
+      fi
+    fi
+  fi
+}
+
+ACTION=
+if [ $# -ne 0 ]; then
+  ACTION=$1
+  shift
+fi
+
+if [ "$ACTION" == "register" ]; then
+  WORKER_TYPE=
+  if [ $# -ne 0 ]; then
+    WORKER_TYPE=$1
+    shift
+  fi
+
+  readCliParams $@
+  readTargetParams ${PASSTHROUGH[@]}
+  if [ "$WORKER_TYPE" == "lambda" ]; then
+    checkLambdaTarget
+  elif [ "$WORKER_TYPE" == "kinesis" ]; then
+    checkKinesisTarget
+  elif [ "$WORKER_TYPE" == "firehose" ]; then
+    checkFirehoseTarget
+  elif [ "$WORKER_TYPE" == "sns" ]; then
+    checkSnsTarget
+  elif [ "$WORKER_TYPE" == "sqs" ]; then
+    checkSqsTarget
+  elif [ "$WORKER_TYPE" == "iot" ]; then
+    checkIotTarget
+  elif [ "$WORKER_TYPE" == "memcached" ]; then
+    checkMemcachedTarget
+  elif [ "$WORKER_TYPE" == "redis" ]; then
+    checkRedisTarget
+  elif [ "$WORKER_TYPE" == "es" ]; then
+    checkEsTarget
+  else
+    echo "Invalid target type '$WORKER_TYPE', you must specify a target type, one of" 1>&2
+    echo " - sns: for specifying an Amazon Simple Notification Service (SNS) Topic" 1>&2
+    echo " - sqs: for specifying an Amazon Simple Queue Service (SQS) Queue" 1>&2
+    echo " - es: for specifying an Amazon Elasticsearch Domain" 1>&2
+    echo " - kinesis: for specifying an Amazon Kinesis Stream" 1>&2
+    echo " - firehose: for specifying an Amazon Kinesis Firehose Delivery Stream" 1>&2
+    echo " - iot: for specifying an AWS IoT MQTT topic" 1>&2
+    echo " - lambda: for specifying an AWS Lambda Function" 1>&2
+    echo " - memcached: for specifying an Amazon ElastiCache Memcached Cluster" 1>&2
+    echo " - redis: for specifying an Amazon ElastiCache Redis Replication Group" 1>&2
+    doHelp
+    exit -1
+  fi
+  readObjectProperties ${PASSTHROUGH[@]}
+  readFunctionParams ${PASSTHROUGH[@]}
+  readWorkerParams ${PASSTHROUGH[@]}
+  if [ ${#PASSTHROUGH[@]} -ne 0 ]; then
+    echo "register: unexpected parameter ${PASSTHROUGH[@]}" 1>&2
+    doHelp
+    exit -1
+  fi
+
+  registerFanoutTarget ${PASSTHROUGH[@]}
+elif [ "$ACTION" == "update" ]; then
+  readCliParams $@
+  readObjectProperties ${PASSTHROUGH[@]}
+  readFunctionParams ${PASSTHROUGH[@]}
+  readWorkerParams ${PASSTHROUGH[@]}
+  if [ ${#PASSTHROUGH[@]} -ne 0 ]; then
+    echo "update: unexpected parameter ${PASSTHROUGH[@]}" 1>&2
+    doHelp
+    exit -1
+  fi
+
+  updateFanoutTarget
+elif [ "$ACTION" == "activate" ]; then
+  ACTIVE=true
+  readCliParams $@
+  readFunctionParams ${PASSTHROUGH[@]}
+  readWorkerParams ${PASSTHROUGH[@]}
+  if [ ${#PASSTHROUGH[@]} -ne 0 ]; then
+    echo "activate: unexpected parameter ${PASSTHROUGH[@]}" 1>&2
+    doHelp
+    exit -1
+  fi
+
+  updateFanoutTarget
+elif [ "$ACTION" == "deactivate" ]; then
+  ACTIVE=false
+  readCliParams $@
+  readFunctionParams ${PASSTHROUGH[@]}
+  readWorkerParams ${PASSTHROUGH[@]}
+  if [ ${#PASSTHROUGH[@]} -ne 0 ]; then
+    echo "deactivate: unexpected parameter ${PASSTHROUGH[@]}" 1>&2
+    doHelp
+    exit -1
+  fi
+
+  updateFanoutTarget
+elif [ "$ACTION" == "unregister" ]; then
+  readCliParams $@
+  readFunctionParams ${PASSTHROUGH[@]}
+  readWorkerParams ${PASSTHROUGH[@]}
+  if [ ${#PASSTHROUGH[@]} -ne 0 ]; then
+    echo "unregister: unexpected parameter ${PASSTHROUGH[@]}" 1>&2
+    doHelp
+    exit -1
+  fi
+
+  unregisterFanoutTarget
+elif [ "$ACTION" == "list" ]; then
+  readCliParams $@
+  readFunctionParams ${PASSTHROUGH[@]}
+  readWorkerParams ${PASSTHROUGH[@]}
+  if [ ${#PASSTHROUGH[@]} -ne 0 ]; then
+    echo "list: unexpected parameter ${PASSTHROUGH[@]}" 1>&2
+    doHelp
+    exit -1
+  fi
+
+  listFanoutTargets $@
+elif [ "$ACTION" == "deploy" ]; then
+  readCliParams $@
+  readFunctionParams ${PASSTHROUGH[@]}
+  readFunctionConfigParams ${PASSTHROUGH[@]}
+  if [ ${#PASSTHROUGH[@]} -ne 0 ]; then
+    echo "deploy: unexpected parameter ${PASSTHROUGH[@]}" 1>&2
+    doHelp
+    exit -1
+  fi
+
+  deployFanout
+elif [ "$ACTION" == "destroy" ]; then
+  readCliParams $@
+  readFunctionParams ${PASSTHROUGH[@]}
+  if [ ${#PASSTHROUGH[@]} -ne 0 ]; then
+    echo "destroy: unexpected parameter ${PASSTHROUGH[@]}" 1>&2
+    doHelp
+    exit -1
+  fi
+
+  destroyFanout
+elif [ "$ACTION" == "hook" ]; then
+  readCliParams $@
+  readFunctionParams ${PASSTHROUGH[@]}
+  readWorkerParams ${PASSTHROUGH[@]}
+  readSourceConfigParams ${PASSTHROUGH[@]}
+  if [ ${#PASSTHROUGH[@]} -ne 0 ]; then
+    echo "list: unexpected parameter ${PASSTHROUGH[@]}" 1>&2
+    doHelp
+    exit -1
+  fi
+
+  hookFanoutSource $@
+elif [ "$ACTION" == "unhook" ]; then
+  readCliParams $@
+  readFunctionParams ${PASSTHROUGH[@]}
+  readWorkerParams ${PASSTHROUGH[@]}
+  if [ ${#PASSTHROUGH[@]} -ne 0 ]; then
+    echo "list: unexpected parameter ${PASSTHROUGH[@]}" 1>&2
+    doHelp
+    exit -1
+  fi
+
+  unhookFanoutSource $@
+elif [ "$ACTION" == "pause" ]; then
+  readCliParams $@
+  readFunctionParams ${PASSTHROUGH[@]}
+  readWorkerParams ${PASSTHROUGH[@]}
+  if [ ${#PASSTHROUGH[@]} -ne 0 ]; then
+    echo "list: unexpected parameter ${PASSTHROUGH[@]}" 1>&2
+    doHelp
+    exit -1
+  fi
+
+  setHookFanoutSourceState inactive $@
+elif [ "$ACTION" == "resume" ]; then
+  readCliParams $@
+  readFunctionParams ${PASSTHROUGH[@]}
+  readWorkerParams ${PASSTHROUGH[@]}
+  if [ ${#PASSTHROUGH[@]} -ne 0 ]; then
+    echo "list: unexpected parameter ${PASSTHROUGH[@]}" 1>&2
+    doHelp
+    exit -1
+  fi
+
+  setHookFanoutSourceState active $@
+else
+  echo "Invalid action, you must specify an action" 1>&2
+  doHelp
+  exit -1
+fi

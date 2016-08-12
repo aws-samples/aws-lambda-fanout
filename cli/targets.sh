@@ -340,11 +340,6 @@ function readObjectProperties {
     doHelp
     exit -1
   fi
-  if [ ! -z "${COLLAPSE}" ] && [ "${COLLAPSE}" != "true" ] && [ "${COLLAPSE}" != "false" ]; then
-    echo "readObjectProperties: invalid boolean property --collapse $COLLAPSE" 1>&2
-    doHelp
-    exit -1
-  fi
   if [ ! -z "${COLLAPSE}" ] && [ "${COLLAPSE}" != "none" ] && [ "${COLLAPSE}" != "JSON" ] && [ "${COLLAPSE}" != "concat" ] && [ "${COLLAPSE}" != "concat-b64" ]; then
     echo "readObjectProperties: invalid property --collapse $COLLAPSE, must be one of (none, JSON, concat, concat-b64)" 1>&2
     doHelp
@@ -448,7 +443,7 @@ function hookFanoutSource {
   if [ ! -z "$HOOK_ID" ] && [ "$HOOK_ID" != "None" ]; then
     echo "There is already a hook (ID: $HOOK_ID) for this source"
   else
-    aws lambda create-event-source-mapping --event-source-arn $SOURCE_ARN --function-name fanout --enabled --batch-size $BATCH_SIZE --starting-position $STARTING_POSITION ${CLI_PARAMS[@]}
+    aws lambda create-event-source-mapping --event-source-arn $SOURCE_ARN --function-name $FUNCTION_NAME --enabled --batch-size $BATCH_SIZE --starting-position $STARTING_POSITION ${CLI_PARAMS[@]}
   fi
 }
 
@@ -485,6 +480,9 @@ function setHookFanoutSourceState {
 function registerFanoutTarget {
   if [ -z "${ACTIVE}" ]; then
     ACTIVE=false
+  fi
+  if [ -z "${COLLAPSE}" ]; then
+    ACTIVE=none
   fi
 
   buildObject create

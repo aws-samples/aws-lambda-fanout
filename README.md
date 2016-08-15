@@ -4,9 +4,11 @@ This function answers a need I have had multiple times, where I want to replicat
 
 This AWS Lambda function can be used to propagate incoming messages from Amazon Kinesis Streams or Amazon DynamoDB Streams to other services ([Amazon SNS](https://aws.amazon.com/sns/), [Amazon SQS](https://aws.amazon.com/sqs/), [Amazon Elasticsearch Service](https://aws.amazon.com/elasticsearch-service/), [Amazon Kinesis Streams](https://aws.amazon.com/kinesis/streams/), [Amazon Kinesis Firehose](https://aws.amazon.com/kinesis/firehose/), [AWS IoT](https://aws.amazon.com/iot/), [AWS Lambda](https://aws.amazon.com/lambda/), [Amazon ElastiCache for Memcached and Redis](https://aws.amazon.com/elasticache/)), regions or accounts. This function generates metrics that will be published to Amazon CloudWatch Metrics, in the `Custom/FanOut` namespace.
 
+![Architecture](architecture.png)
+
 This function can be run in the 'public' AWS Lambda mode (and should be the default for most services), or inside an Amazon Virtual Private Cloud (VPC) if you use Amazon ElastiCache (Redis or memcached).
 
-As the configuration data resides in Amazon DynamoDB and because the function sends metrics via Amazon CloudWatch, the function **must** have Internet access. To have Internet access, an [AWS Lambda function running inside an Amazon VPC](http://docs.aws.amazon.com/lambda/latest/dg/vpc.html) must reside in a private subnet with a route through a NAT Gateway (either a self-managed NAT instance or an [Amazon Managed NAT Gateway](http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/vpc-nat-gateway.html)) for Internet. This limitation exists because AWS Lambda functions in an Amazon VPC don't have a public IP Address.
+As the configuration data resides in Amazon DynamoDB, and because the function sends metrics via Amazon CloudWatch, the function **must** have Internet access. To have Internet access, an [AWS Lambda function running inside an Amazon VPC](http://docs.aws.amazon.com/lambda/latest/dg/vpc.html) must reside in a private subnet with a route through a NAT Gateway (either a self-managed NAT instance or an [Amazon Managed NAT Gateway](http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/vpc-nat-gateway.html)) for Internet. This limitation exists because AWS Lambda functions in an Amazon VPC don't have a public IP Address.
 
 ## Glossary
 
@@ -348,3 +350,18 @@ Example:
 `./fanout pause --function fanout --source-type kinesis --source inputStream`
 `./fanout resume --function fanout --source-type kinesis --source inputStream`
 
+
+# License
+
+Copyright 2011-2013 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License"). You
+may not use this file except in compliance with the License. A copy of
+the License is located at
+
+http://aws.amazon.com/apache2.0/
+
+or in the "license" file accompanying this file. This file is
+distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+ANY KIND, either express or implied. See the License for the specific
+language governing permissions and limitations under the License.

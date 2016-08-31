@@ -66,7 +66,7 @@ Each `target` is defined by a set of parameters, stored in an Amazon DynamoDB ta
 * `role`        (String)  [optional]: for cross-account roles: you can specify the role ARN that will be assumed
 * `externalId`  (String)  [optional]: for cross-account roles: you can specify an external Id for the STS:AssumeRole call 
 * `region`      (String)  [optional]: for cross-region calls, you can specify the region name
-* `collapse`    (Boolean) [optional]: for AWS IoT, Amazon SQS and Amazon SNS, defines is the messages must be colapsed or not (none, JSON, concat, concat-b64, default JSON)
+* `collapse`    (String)  [optional]: for AWS IoT, Amazon SQS and Amazon SNS, defines how the messages should be collapsed, if at all (none, JSON, concat, concat-b64; default: JSON)
 * `parallel`    (Boolean) [optional]: indicates if we should process sending these messages in parallel. Warning: this may break in-shard ordering for Amazon Kinesis (default true)
 * `convertDDB`  (Boolean) [optional]: for Amazon DynamoDB Streams messages, converts the DDB objects to plain Javascript objects
 * `deaggregate` (Boolean) [optional]: for Amazon Kinesis Streams messages, deserializes KPL (protobuf-based) messages
@@ -221,7 +221,7 @@ The `register <type>` command creates a new mapping for an existing `fanout func
 * `--active <true|false>` (optional, default false) indicates if this target is active or not
 * `--role-arn <arn:aws:iam::0123456789abcdef::role/targetRole>` (optional) specify, for cross-account roles, the role ARN that will be assumed
 * `--external-id <123456>` (optional) specify, for cross-account roles, an external Id for the STS:AssumeRole call
-* `--collapse <true|false>` (optional, default true) for AWS IoT, Amazon SQS and Amazon SNS, defines is the messages must be colapsed or not (default true)
+* `--collapse <none|JSON|concat|concat-b64>` (optional, default JSON) for AWS IoT, Amazon SQS and Amazon SNS, defines how the messages should be collapsed, if at all
 * `--parallel <true|false>` (optional, default true) indicates if we should process sending these messages in parallel
 * `--convert-ddb <true|false>` (optional, default false) for Amazon DynamoDB Streams messages, converts the DDB objects to plain Javascript objects
 * `--deaggregate <true|false>` (optional, default false) for Amazon Kinesis Streams messages, deserializes KPL (protobuf-based) messages
@@ -249,7 +249,7 @@ The `update` command allows you to modify some parameters of your mappings. As t
 * `--active <true|false>` (optional) indicates if this target is active or not
 * `--role-arn <arn:aws:iam::0123456789abcdef::role/targetRole>` (optional) specify, for cross-account roles, the role ARN that will be assumed
 * `--external-id <123456>` (optional) specify, for cross-account roles, an external Id for the STS:AssumeRole call
-* `--collapse <true|false>` (optional) for AWS IoT, Amazon SQS and Amazon SNS, defines is the messages must be colapsed or not (default true)
+* `--collapse <none|JSON|concat|concat-b64>` (optional, default JSON) for AWS IoT, Amazon SQS and Amazon SNS, defines how the messages should be collapsed, if at all
 * `--parallel <true|false>` (optional) indicates if we should process sending these messages in parallel
 * `--convert-ddb <true|false>` (optional, default false) for Amazon DynamoDB Streams messages, converts the DDB objects to plain Javascript objects
 * `--deaggregate <true|false>` (optional, default false) for Amazon Kinesis Streams messages, deserializes KPL (protobuf-based) messages

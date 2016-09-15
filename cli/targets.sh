@@ -81,7 +81,7 @@ function readWorkerParams {
     fi
   done
 
-  if [ -z "${WORKER_ID}" ] && [ "${ACTION}" != "register" ] && [ "${ACTION}" != "list" ] && [ "${ACTION}" != "hook" ] && [ "${ACTION}" != "unhook" ] && [ "${ACTION}" != "pause" ] && [ "${ACTION}" != "resume" ]; then
+  if [ -z "${WORKER_ID}" ] && [ "${ACTION}" != "list" ] && [ "${ACTION}" != "hook" ] && [ "${ACTION}" != "unhook" ] && [ "${ACTION}" != "pause" ] && [ "${ACTION}" != "resume" ]; then
     echo "readWorkerParams: Invalid parameters, you must specify --id" 1>&2
     doHelp
     exit -1
@@ -336,7 +336,7 @@ function readObjectProperties {
   done
 
   if [ ! -z "${ACTIVE}" ] && [ "${ACTIVE}" != "true" ] && [ "${ACTIVE}" != "false" ]; then
-    echo "readObjectProperties: invalid boolean property --active $ACTIVE" 1>&2
+    echo "readObjectProperties: invalid boolean property --active $ACTIVE, must be one of (true, false)" 1>&2
     doHelp
     exit -1
   fi
@@ -346,17 +346,17 @@ function readObjectProperties {
     exit -1
   fi
   if [ ! -z "${PARALLEL}" ] && [ "${PARALLEL}" != "true" ] && [ "${PARALLEL}" != "false" ]; then
-    echo "readObjectProperties: invalid boolean property --parallel $PARALLEL" 1>&2
+    echo "readObjectProperties: invalid boolean property --parallel $PARALLEL, must be one of (true, false)" 1>&2
     doHelp
     exit -1
   fi
   if [ ! -z "${CONVERT_DDB}" ] && [ "${CONVERT_DDB}" != "true" ] && [ "${CONVERT_DDB}" != "false" ]; then
-    echo "readObjectProperties: invalid boolean property --convert-ddb $CONVERT_DDB" 1>&2
+    echo "readObjectProperties: invalid boolean property --convert-ddb $CONVERT_DDB, must be one of (true, false)" 1>&2
     doHelp
     exit -1
   fi
   if [ ! -z "${DEAGGREGATE}" ] && [ "${DEAGGREGATE}" != "true" ] && [ "${DEAGGREGATE}" != "false" ]; then
-    echo "readObjectProperties: invalid boolean property --deaggregate $PARALLEL" 1>&2
+    echo "readObjectProperties: invalid boolean property --deaggregate $PARALLEL, must be one of (true, false)" 1>&2
     doHelp
     exit -1
   fi
@@ -482,7 +482,7 @@ function registerFanoutTarget {
     ACTIVE=false
   fi
   if [ -z "${COLLAPSE}" ]; then
-    ACTIVE=none
+    COLLAPSE=none
   fi
 
   buildObject create

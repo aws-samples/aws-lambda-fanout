@@ -82,9 +82,8 @@ function readFunctionParams {
 
   if [ -z "${FUNCTION_ARN}" ]; then
     if [ -z "${FUNCTION_NAME}" ]; then
-      echo "Invalid parameters, you must specify --function" 1>&2
-      doHelp
-      exit -1
+      FUNCTION_NAME=fanout
+      echo "No function name provided, using default name '${FUNCTION_NAME}'" 1>&2
     fi
 
     FUNCTION_ARN=$(aws lambda "get-function" "--function-name" ${FUNCTION_NAME} --query 'Configuration.FunctionArn' --output text ${CLI_PARAMS[@]} 2> /dev/null)
@@ -220,7 +219,18 @@ function deployFanout {
     rm fanout.zip
   fi
   npm install
-  zip -q -r fanout.zip fanout.js node_modules lib
+  ZIP_EXE=$(which zip 2> /dev/null)
+  if [ -z "$ZIP_EXE" ]; then
+    WIN_7Z_EXE=$(which 7z 2> /dev/null)
+    if [ -z "$WIN_7Z_EXE" ]; then
+      echo "Unable to find suitable 'zip' or '7z' command" 1>&2
+      exit -1
+    else
+      7z a -r fanout.zip fanout.js node_modules lib
+    fi
+  else
+    zip -q -r fanout.zip fanout.js node_modules lib
+  fi
 
   if [ -z "$FUNCTION_ARN" ]; then
     # Will be empty if we need to create the function

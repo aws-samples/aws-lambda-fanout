@@ -132,11 +132,7 @@ Optional command line parameters are:
 
 The `deploy` command creates the `fanout function` and supporting resources (AWS IAM Role, Amazon DynamoDB Table). It expects the following parameters:
 
-<<<<<<< HEAD
-* `--function <fanout>`: (optional, defaults to 'fanout') all commands expect an AWS Lambda function name to be provided.
-=======
-* `--function <fanout>`: (optional, defaults to 'fanOut') all commands expect an AWS Lambda function name to be provided.
->>>>>>> e4903ed197c76a467c16e1d9fec47219c859fd05
+* `--function <fanout>`: (optional, defaults to `fanout`) all commands expect an AWS Lambda function name to be provided.
     * This name will be used to derive the AWS IAM Role name (`<function-name>Role`) if it is not provided
     * This name will be used to derive the Amazon DynamoDB Table name (`<function-name>Targets`) if it is not provided.
     * You can specify the function by ARN and avoid detection by using `--function-arn <arn:aws:lambda:us-east-1:0123456789abcdef:function:fanout>`
@@ -164,11 +160,7 @@ Example:
 
 The `list` command retrieves all the existing mappings for a specific source. It expects the following parameters:
 
-<<<<<<< HEAD
-* `--function <fanout>` (optional, defaults to 'fanout') specify the name of the function
-=======
-* `--function <fanout>` (optional, defaults to 'fanOut') specify the name of the function
->>>>>>> e4903ed197c76a467c16e1d9fec47219c859fd05
+* `--function <fanout>` (optional, defaults to `fanout`) specify the name of the function
     * You can specify the function by ARN and avoid detection by using `--function-arn <arn:aws:lambda:us-east-1:0123456789abcdef:function:fanout>`
 * `--source-type <kinesis|dynamodb>` (required) specify the type of the source (one of Amazon Kinesis Stream or Amazon DynamoDB Stream)
 * `--source <kinesisStream>` (required) specify the name of the input Amazon Kinesis Stream or Amazon DynamoDB Stream
@@ -189,11 +181,7 @@ Example:
 The `register <type>` command creates a new mapping for an existing `fanout function`. As the `fanout function` caches the configuration for performance reasons (default time of 1 minute), there may be a delay in the activation of this mapping. Note also that unless `--active true` is specified new mappings are created inactive for safety reasons. It expects the following parameters:
 
 * `<type>` (required) the type of the destination
-<<<<<<< HEAD
-* `--function <fanout>` (optional, defaults to 'fanout') specify the name of the function
-=======
-* `--function <fanout>` (optional, defaults to 'fanOut') specify the name of the function
->>>>>>> e4903ed197c76a467c16e1d9fec47219c859fd05
+* `--function <fanout>` (optional, defaults to `fanout`) specify the name of the function
     * You can specify the function by ARN and avoid detection by using `--function-arn <arn:aws:lambda:us-east-1:0123456789abcdef:function:fanout>`
 * `--source-type <kinesis|dynamodb>` (required) specify the type of the source (one of Amazon Kinesis Stream or Amazon DynamoDB Stream)
 * `--source <kinesisStream>` (required) specify the name of the input Amazon Kinesis Stream or Amazon DynamoDB Stream
@@ -251,11 +239,7 @@ Example:
 
 The `update` command allows you to modify some parameters of your mappings. As the `fanout function` caches the configuration for performance reasons (default time of 1 minute), there may be a delay in the application of the modification. It expects the following parameters:
 
-<<<<<<< HEAD
-* `--function <fanout>` (optional, defaults to 'fanout') specify the name of the function
-=======
-* `--function <fanout>` (optional, defaults to 'fanOut') specify the name of the function
->>>>>>> e4903ed197c76a467c16e1d9fec47219c859fd05
+* `--function <fanout>` (optional, defaults to `fanout`) specify the name of the function
     * You can specify the function by ARN and avoid detection by using `--function-arn <arn:aws:lambda:us-east-1:0123456789abcdef:function:fanout>`
 * `--source-type <kinesis|dynamodb>` (required) specify the type of the source (one of Amazon Kinesis Stream or Amazon DynamoDB Stream)
 * `--source <kinesisStream>` (required) specify the name of the input Amazon Kinesis Stream or Amazon DynamoDB Stream
@@ -281,11 +265,7 @@ Example:
 
 The `activate` and `deactivate` commands turn on or off a specific mapping. As the `fanout function` caches the configuration for performance reasons (default time of 1 minute), there may be a delay in the application of the modification. They expect the following parameters:
 
-<<<<<<< HEAD
-* `--function <fanout>` (optional, defaults to 'fanout') specify the name of the function
-=======
-* `--function <fanout>` (optional, defaults to 'fanOut') specify the name of the function
->>>>>>> e4903ed197c76a467c16e1d9fec47219c859fd05
+* `--function <fanout>` (optional, defaults to `fanout`) specify the name of the function
     * You can specify the function by ARN and avoid detection by using `--function-arn <arn:aws:lambda:us-east-1:0123456789abcdef:function:fanout>`
 * `--source-type <kinesis|dynamodb>` (required) specify the type of the source (one of Amazon Kinesis Stream or Amazon DynamoDB Stream)
 * `--source <kinesisStream>` (required) specify the name of the input Amazon Kinesis Stream or Amazon DynamoDB Stream
@@ -306,11 +286,7 @@ Example:
 
 The `unregister` command removes an existing mapping fromt the configuration table. As the `fanout function` caches the configuration for performance reasons (default time of 1 minute), there may be a delay before the `target` is effectively removed. It expects the following parameters:
 
-<<<<<<< HEAD
-* `--function <fanout>` (optional, defaults to 'fanout') specify the name of the function
-=======
-* `--function <fanout>` (optional, defaults to 'fanOut') specify the name of the function
->>>>>>> e4903ed197c76a467c16e1d9fec47219c859fd05
+* `--function <fanout>` (optional, defaults to `fanout`) specify the name of the function
     * You can specify the function by ARN and avoid detection by using `--function-arn <arn:aws:lambda:us-east-1:0123456789abcdef:function:fanout>`
 * `--source-type <kinesis|dynamodb>` (required) specify the type of the source (one of Amazon Kinesis Stream or Amazon DynamoDB Stream)
 * `--source <kinesisStream>` (required) specify the name of the input Amazon Kinesis Stream or Amazon DynamoDB Stream
@@ -330,11 +306,7 @@ Example:
 
 The `destroy` command removes the `fanout function` and its configuration. It expects the following parameters:
 
-<<<<<<< HEAD
-* `--function <fanout>` (optional, defaults to 'fanout') specify the name of the function
-=======
-* `--function <fanout>` (optional, defaults to 'fanOut') specify the name of the function
->>>>>>> e4903ed197c76a467c16e1d9fec47219c859fd05
+* `--function <fanout>` (optional, defaults to `fanout`) specify the name of the function
 
 Example:
 
@@ -344,11 +316,7 @@ Example:
 
 The `hook` and `unhook` commands register and unregister an event source mapping for the specified `source`. They expect the following parameters:
 
-<<<<<<< HEAD
-* `--function <fanout>` (optional, defaults to 'fanout') specify the name of the function
-=======
-* `--function <fanout>` (optional, defaults to 'fanOut') specify the name of the function
->>>>>>> e4903ed197c76a467c16e1d9fec47219c859fd05
+* `--function <fanout>` (optional, defaults to `fanout`) specify the name of the function
     * You can specify the function by ARN and avoid detection by using `--function-arn <arn:aws:lambda:us-east-1:0123456789abcdef:function:fanout>`
 * `--source-type <kinesis|dynamodb>` (required) specify the type of the source (one of Amazon Kinesis Stream or Amazon DynamoDB Stream)
 * `--source <kinesisStream>` (required) specify the name of the input Amazon Kinesis Stream or Amazon DynamoDB Stream
@@ -367,11 +335,7 @@ Example:
 
 The `pause` and `resume` commands turn on or off a specific source. They will respectly disable and enable the event source mapping from the source to the `fanout function`. They expect the following parameters:
 
-<<<<<<< HEAD
-* `--function <fanout>` (optional, defaults to 'fanout') specify the name of the function
-=======
-* `--function <fanout>` (optional, defaults to 'fanOut') specify the name of the function
->>>>>>> e4903ed197c76a467c16e1d9fec47219c859fd05
+* `--function <fanout>` (optional, defaults to `fanout`) specify the name of the function
     * You can specify the function by ARN and avoid detection by using `--function-arn <arn:aws:lambda:us-east-1:0123456789abcdef:function:fanout>`
 * `--source-type <kinesis|dynamodb>` (required) specify the type of the source (one of Amazon Kinesis Stream or Amazon DynamoDB Stream)
 * `--source <kinesisStream>` (required) specify the name of the input Amazon Kinesis Stream or Amazon DynamoDB Stream

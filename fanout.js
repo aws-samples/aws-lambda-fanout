@@ -167,7 +167,7 @@ function sendMessages(eventSourceARN, target, event, stats, callback) {
       var end = Date.now();
       var duration = Math.floor((end - start) / 10) / 100;
       if(config.debug) {
-        console.log("Target '" + target.id + "' for source '" + eventSourceARN + "' successfully processed in" , duration, "seconds with",records.length,"records");
+        console.log("Target '" + target.id + "' for source '" + eventSourceARN + "' successfully processed in" , duration, "seconds with", event.Records.length,"records");
       }
       callback();
     });

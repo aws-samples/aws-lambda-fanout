@@ -182,6 +182,7 @@ function readTargetParams {
   DESTINATION_INDEX=
   DESTINATION_REGION=
   DESTINATION_ROLE_ARN=
+  EXTERNAL_ID=
 
   while [ $# -ne 0 ]; do
     CODE=$1
@@ -230,6 +231,15 @@ function readTargetParams {
         doHelp
         exit -1
       fi
+    elif [ "$CODE" == "--external-id" ]; then
+      if [ $# -ne 0 ]; then
+        EXTERNAL_ID=$1
+        shift
+      else
+        echo "readTargetParams: You must specify a value for parameter $CODE" 1>&2
+        doHelp
+        exit -1
+      fi
     elif [[ "$CODE" =~ ^--.* ]]; then
       PASSTHROUGH+=($CODE)
       if [ $# -ne 0 ]; then
@@ -246,7 +256,7 @@ function readTargetParams {
   done
 
   if [ ! -z "${DESTINATION_ROLE_ARN}" ]; then
-    DESTINATION_ROLE_NAME=$( echo "$DESTINATION_ROLE_ARN" | sed -E -n 's#^arn:aws:iam::role/([a-zA-Z0-9+=,.@_-]{1,64})$#\1#p' )
+    DESTINATION_ROLE_NAME=$( echo "$DESTINATION_ROLE_ARN" | sed -E -n 's#^arn:aws:iam::[0-9]{12}:role/([a-zA-Z0-9+=,.@_-]{1,64})$#\1#p' )
     if [ -z "${DESTINATION_ROLE_NAME}" ]; then
       echo "Invalid ARN '${DESTINATION_ROLE_ARN}', must be a fully qualified AWS IAM Role ARN" 1>&2
       exit -1
@@ -399,8 +409,8 @@ function buildObject {
     appendJsonProperty "$1" "type" "{\"S\":\"${WORKER_TYPE}\"}"
     appendJsonProperty "$1" "destination" "{\"S\":\"${DESTINATION_ID}\"}"
 
-    if [ ! -z "${DESTINATION_ROLE}" ]; then
-      appendJsonProperty "$1" "role" "{\"S\":\"${DESTINATION_ROLE}\"}"
+    if [ ! -z "${DESTINATION_ROLE_ARN}" ]; then
+      appendJsonProperty "$1" "role" "{\"S\":\"${DESTINATION_ROLE_ARN}\"}"
       if [ ! -z "${EXTERNAL_ID}" ]; then
         appendJsonProperty "$1" "externalId" "{\"S\":\"${EXTERNAL_ID}\"}"
       fi

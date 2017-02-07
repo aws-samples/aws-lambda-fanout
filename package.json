@@ -12,6 +12,9 @@
         "async": "1.5.2"
     }, 
     "description": "An Amazon Kinesis Streams and Amazon DynamoDB Streams pipeline written for AWS Lambda", 
+    "scripts" : {
+        "test": "mocha"
+    },
     "devDependencies": {
         "mocha": "2.4.5",
         "aws-sdk": "2.2.19"

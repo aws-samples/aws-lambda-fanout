@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-if [ -z $1 ] || [ -z $STAGE ] || [ -z $REGION ]
+if [ -z $1 ] || [ -z $STAGE ] || [ -z $REGION ] || [ -z $TARGET_ACCT ]
     then
         echo "Usage: register-student-sandbox-stream <lanid>"
         echo "NOTE! The following environment variables must be set:"
         echo "STAGE, name of the workshop stage."
         echo "REGION, workshop region."
+        echo "TARGET_ACCT, workshop sandbox account."
         exit 1
 fi
 
@@ -28,7 +29,7 @@ if [ -z $RETAIL_STREAM_ARN ]
         echo "Invoking './fanout' to attach stream $RETAIL_STREAM_ARN ..."
 fi
 
-./fanout register kinesis --source-arn $RETAIL_STREAM_ARN --id $1  --destination-region $REGION --active true --parallel false --destination-role-arn arn:aws:iam::468543742856:role/${1}StreamWriter --destination arn:aws:kinesis:us-west-2:468543742856:stream/${1}Stream
+./fanout register kinesis --source-arn $RETAIL_STREAM_ARN --id $1  --destination-region $REGION --active true --parallel false --destination-role-arn arn:aws:iam::${TARGET_ACCT}:role/${1}StreamWriter --destination arn:aws:kinesis:us-west-2:${TARGET_ACCT}:stream/${1}Stream
 
 if [ $? ]
     then

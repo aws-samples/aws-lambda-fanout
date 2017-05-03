@@ -1,0 +1,14 @@
+service: hello-retail-slackbot
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+
+functions:
+  hookstream:
+    handler: handler.hookstream
+    name: ${opt:stage}-hookstream
+    events:
+      - http:
+          path: slack/hookstream
+          method: post

@@ -1,0 +1,45 @@
+service: hello-retail-slackbot
+
+custom:
+  coreAccount: 515126931066
+  coreRegion: us-west-2
+  coreStage: workshop050417
+  fanoutTable: fanoutTargets
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  iamRoleStatements:
+    -  Effect: Allow
+       Action:
+         - dynamodb:PutItem
+         - dynamodb:DeleteItem
+       Resource:
+         - arn:aws:dynamodb:${self:custom.coreRegion}:${self:custom.coreAccount}:table/${self:custom.fanoutTable}
+
+functions:
+  hookstream:
+    handler: handler.hookstream
+    name: ${opt:stage}-hookstream
+    environment:
+      HELLO_RETAIL_STAGE: ${self:custom.coreStage}
+      CORE_STREAM_REGION: ${self:custom.coreRegion}
+      CORE_STREAM_ACCOUNT: ${self:custom.coreAccount}
+      FANOUT_TABLE_NAME: ${self:custom.fanoutTable}
+    events:
+      - http:
+          path: slack/hookstream
+          method: post
+
+  unhookstream:
+    handler: handler.unhookstream
+    name: ${opt:stage}-unhookstream
+    environment:
+      HELLO_RETAIL_STAGE: ${self:custom.coreStage}
+      CORE_STREAM_REGION: ${self:custom.coreRegion}
+      CORE_STREAM_ACCOUNT: ${self:custom.coreAccount}
+      FANOUT_TABLE_NAME: ${self:custom.fanoutTable}
+    events:
+      - http:
+          path: slack/unhookstream
+          method: post

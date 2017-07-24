@@ -314,7 +314,7 @@ function readObjectProperties {
       fi
     elif [ "$CODE" == "--convert-ddb" ]; then
       if [ $# -ne 0 ]; then
-        PARALLEL=$1
+        CONVERT_DDB=$1
         shift
       else
         echo "readObjectProperties: You must specify a value for parameter $CODE" 1>&2
@@ -323,7 +323,7 @@ function readObjectProperties {
       fi
     elif [ "$CODE" == "--deaggregate" ]; then
       if [ $# -ne 0 ]; then
-        PARALLEL=$1
+        DEAGGREGATE=$1
         shift
       else
         echo "readObjectProperties: You must specify a value for parameter $CODE" 1>&2
@@ -366,7 +366,7 @@ function readObjectProperties {
     exit -1
   fi
   if [ ! -z "${DEAGGREGATE}" ] && [ "${DEAGGREGATE}" != "true" ] && [ "${DEAGGREGATE}" != "false" ]; then
-    echo "readObjectProperties: invalid boolean property --deaggregate $PARALLEL, must be one of (true, false)" 1>&2
+    echo "readObjectProperties: invalid boolean property --deaggregate $DEAGGREGATE, must be one of (true, false)" 1>&2
     doHelp
     exit -1
   fi

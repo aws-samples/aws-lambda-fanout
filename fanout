@@ -271,6 +271,7 @@ if [ "$ACTION" == "register" ]; then
   registerFanoutTarget ${PASSTHROUGH[@]}
 elif [ "$ACTION" == "update" ]; then
   readCliParams $@
+  readTargetParams ${PASSTHROUGH[@]}
   readObjectProperties ${PASSTHROUGH[@]}
   readFunctionParams ${PASSTHROUGH[@]}
   readWorkerParams ${PASSTHROUGH[@]}

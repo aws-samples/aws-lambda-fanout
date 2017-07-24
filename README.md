@@ -219,7 +219,7 @@ The `register <type>` command creates a new mapping for an existing `fanout func
 * `--index <doctype/index>` (optional, required only for `es` with domain name) specify, for Amazon Elasticsearch Service, the index in the domain where the data will reside
 * `--destination-region <us-west-2>` (optional) specify the `target region` for this mapping
 * `--active <true|false>` (optional, default false) indicates if this target is active or not
-* `--role-arn <arn:aws:iam::0123456789abcdef::role/targetRole>` (optional) specify, for cross-account roles, the role ARN that will be assumed
+* `--destination-role-arn <arn:aws:iam::0123456789abcdef::role/targetRole>` (optional) specify, for cross-account roles, the role ARN that will be assumed
 * `--external-id <123456>` (optional) specify, for cross-account roles, an external Id for the STS:AssumeRole call
 * `--collapse <none|JSON|concat|concat-b64>` (optional, default JSON) for AWS IoT, Amazon SQS and Amazon SNS, defines how the messages should be collapsed, if at all
 * `--parallel <true|false>` (optional, default true) indicates if we should process sending these messages in parallel
@@ -247,7 +247,7 @@ The `update` command allows you to modify some parameters of your mappings. As t
     * When `--source` is used, you must specify `--source-type` as well
 * `--id <mapping-id>` (required) specify the identifier of this mapping
 * `--active <true|false>` (optional) indicates if this target is active or not
-* `--role-arn <arn:aws:iam::0123456789abcdef::role/targetRole>` (optional) specify, for cross-account roles, the role ARN that will be assumed
+* `--destination-role-arn <arn:aws:iam::0123456789abcdef::role/targetRole>` (optional) specify, for cross-account roles, the role ARN that will be assumed
 * `--external-id <123456>` (optional) specify, for cross-account roles, an external Id for the STS:AssumeRole call
 * `--collapse <none|JSON|concat|concat-b64>` (optional, default JSON) for AWS IoT, Amazon SQS and Amazon SNS, defines how the messages should be collapsed, if at all
 * `--parallel <true|false>` (optional) indicates if we should process sending these messages in parallel

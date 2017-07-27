@@ -36,7 +36,7 @@ function checkLambdaTarget {
   if [ ! -z "$DESTINATION_NAME" ]; then
     DESTINATION_ID=$( echo "$DESTINATION_NAME" | sed -E -n 's#^arn:aws:lambda:[a-z]+-[a-z]+-[0-9]:[0-9]{12}:function:([a-zA-Z0-9_-]{1,64})$#\1#p' )
     if [ -z "${DESTINATION_ID}" ]; then
-      if [ ! -z "${DESTINATION_ROLE}" ]; then
+      if [ ! -z "${DESTINATION_ROLE_ARN}" ]; then
         echo "Invalid ARN '${DESTINATION_NAME}', must be a fully qualified AWS Lambda Function ARN" 1>&2
         echo " - You specified a Role ARN, and name expansion can only be made on functions within your local user" 1>&2
         exit -1
@@ -56,7 +56,7 @@ function checkKinesisTarget {
   if [ ! -z "$DESTINATION_NAME" ]; then
     DESTINATION_ID=$( echo "$DESTINATION_NAME" | sed -E -n 's#^arn:aws:kinesis:[a-z]+-[a-z]+-[0-9]:[0-9]{12}:stream/([a-zA-Z0-9_-]{1,128})$#\1#p' )
     if [ -z "${DESTINATION_ID}" ]; then
-      if [ ! -z "${DESTINATION_ROLE}" ]; then
+      if [ ! -z "${DESTINATION_ROLE_ARN}" ]; then
         echo "Invalid ARN '${DESTINATION_NAME}', must be a fully qualified Amazon Kinesis Stream ARN" 1>&2
         echo " - You specified a Role ARN, and name expansion can only be made on streams within your local user" 1>&2
         exit -1
@@ -76,7 +76,7 @@ function checkFirehoseTarget {
   if [ ! -z "$DESTINATION_NAME" ]; then
     DESTINATION_ID=$( echo "$DESTINATION_NAME" | sed -E -n 's#^arn:aws:firehose:[a-z]+-[a-z]+-[0-9]:[0-9]{12}:deliverystream/([a-zA-Z0-9_-]{1,64})$#\1#p' )
     if [ -z "${DESTINATION_ID}" ]; then
-      if [ ! -z "${DESTINATION_ROLE}" ]; then
+      if [ ! -z "${DESTINATION_ROLE_ARN}" ]; then
         echo "Invalid ARN '${DESTINATION_NAME}', must be a fully qualified Amazon Kinesis Firehose Delivery Stream ARN" 1>&2
         echo " - You specified a Role ARN, and name expansion can only be made on streams within your local user" 1>&2
         exit -1
@@ -96,7 +96,7 @@ function checkSqsTarget {
   if [ ! -z "$DESTINATION_NAME" ]; then
     DESTINATION_ID=$( echo "$DESTINATION_NAME" | grep -E -e '^https://((queue)|(sqs\.[a-z]+-[a-z]+-[0-9]))\.amazonaws\.com/[0-9]{12}/[a-zA-Z0-9_-]{1,80}$' )
     if [ -z "${DESTINATION_ID}" ]; then
-      if [ ! -z "${DESTINATION_ROLE}" ]; then
+      if [ ! -z "${DESTINATION_ROLE_ARN}" ]; then
         echo "Invalid url '${DESTINATION_NAME}', must be a fully qualified Amazon SQS Queue Url" 1>&2
         echo " - You specified a Role ARN, and name expansion can only be made on queues within your local user" 1>&2
         exit -1
@@ -116,7 +116,7 @@ function checkIotTarget {
   if [ ! -z "$DESTINATION_NAME" ]; then
     DESTINATION_ID=$( echo "$DESTINATION_NAME" | grep -E '^[a-zA-Z0-9-]+\.iot\.[a-z]+-[a-z]+-[0-9]\.amazonaws\.com#.*$' )
     if [ -z "${DESTINATION_ID}" ]; then
-      if [ ! -z "${DESTINATION_ROLE}" ]; then
+      if [ ! -z "${DESTINATION_ROLE_ARN}" ]; then
         echo "Invalid configuration '${DESTINATION_NAME}', must be a fully qualified Amazon IoT Endpoint followed by an MQTT topic name (separated by #)" 1>&2
         echo " - You specified a Role ARN, and name expansion can only be made on topics within your local user" 1>&2
         exit -1
@@ -132,7 +132,7 @@ function checkSnsTarget {
   if [ ! -z "$DESTINATION_NAME" ]; then
     DESTINATION_ID=$( echo "$DESTINATION_NAME" | grep -E -e '^arn:aws:sns:[a-z]+-[a-z]+-[0-9]:[0-9]{12}:[a-zA-Z0-9_-][a-zA-Z0-9_-]{0,255}$' )
     if [ -z "${DESTINATION_ID}" ]; then
-      if [ ! -z "${DESTINATION_ROLE}" ]; then
+      if [ ! -z "${DESTINATION_ROLE_ARN}" ]; then
         echo "Invalid ARN '${DESTINATION_NAME}', must be a fully qualified Amazon SNS Topic ARN" 1>&2
         echo " - You specified a Role ARN, and name expansion can only be made on topics within your local user" 1>&2
         exit -1
@@ -152,7 +152,7 @@ function checkMemcachedTarget {
   if [ ! -z "$DESTINATION_NAME" ]; then
     DESTINATION_ID=$( echo "$DESTINATION_NAME" | grep -E -e '^[a-zA-Z][a-zA-Z0-9-]{0,19}\.[a-z0-9]+\.cfg\.[a-z]+[0-9]\.cache\.amazonaws\.com:[0-9]+$' )
     if [ -z "${DESTINATION_ID}" ]; then
-      if [ ! -z "${DESTINATION_ROLE}" ]; then
+      if [ ! -z "${DESTINATION_ROLE_ARN}" ]; then
         echo "Invalid endpoint '${DESTINATION_NAME}', must be a valid Amazon ElastiCache cluster endpoint in the format <configuration-endpoint>:<port>" 1>&2
         echo " - You specified a Role ARN, and name expansion can only be made on topics within your local user" 1>&2
         exit -1
@@ -172,7 +172,7 @@ function checkRedisTarget {
   if [ ! -z "$DESTINATION_NAME" ]; then
     DESTINATION_ID=$( echo "$DESTINATION_NAME" | grep -E -e '^[a-zA-Z][a-zA-Z0-9-]{0,19}\.[a-z0-9]+\.ng\.[0-9]+\.[a-z]+[0-9]\.cache\.amazonaws\.com:[0-9]+$' )
     if [ -z "${DESTINATION_ID}" ]; then
-      if [ ! -z "${DESTINATION_ROLE}" ]; then
+      if [ ! -z "${DESTINATION_ROLE_ARN}" ]; then
         echo "Invalid endpoint '${DESTINATION_NAME}', must be a valid Amazon ElastiCache replication group primary endpoint in the format <primary-endpoint>:<port>" 1>&2
         echo " - You specified a Role ARN, and name expansion can only be made on clusters within your local user" 1>&2
         exit -1
@@ -192,7 +192,7 @@ function checkEsTarget {
   if [ ! -z "$DESTINATION_NAME" ]; then
     DESTINATION_ID=$( echo "$DESTINATION_NAME" | grep -E -e '^search-[a-z][a-z0-9-]{2,27}-[a-z0-9]+\.[a-z]+-[a-z]+-[0-9]\.es\.amazonaws\.com#.*$' )
     if [ -z "${DESTINATION_ID}" ]; then
-      if [ ! -z "${DESTINATION_ROLE}" ]; then
+      if [ ! -z "${DESTINATION_ROLE_ARN}" ]; then
         echo "Invalid endpoint '${DESTINATION_NAME}', must be a fully qualified Amazon Elasticsearch Service Domain endpoint followed by '#' then the index name" 1>&2
         echo " - You specified a Role ARN, and name expansion can only be made on domains within your local user" 1>&2
         exit -1
@@ -271,6 +271,7 @@ if [ "$ACTION" == "register" ]; then
   registerFanoutTarget ${PASSTHROUGH[@]}
 elif [ "$ACTION" == "update" ]; then
   readCliParams $@
+  readTargetParams ${PASSTHROUGH[@]}
   readObjectProperties ${PASSTHROUGH[@]}
   readFunctionParams ${PASSTHROUGH[@]}
   readWorkerParams ${PASSTHROUGH[@]}

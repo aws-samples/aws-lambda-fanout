@@ -101,7 +101,10 @@ function readFunctionParams {
 
   if [ -z "${TABLE_ARN}" ]; then
     if [ -z "${TABLE_NAME}" ]; then
-      TABLE_NAME=${FUNCTION_NAME}Targets
+      TABLE_NAME=$(aws lambda get-function-configuration --function-name ${FUNCTION_NAME} --query 'Environment.Variables.TABLE_NAME' --output text 2> /dev/null)
+       if [ $(echo $?) -eq 255 ]; then
+      	TABLE_NAME=${FUNCTION_NAME}Targets
+       fi
     fi
 
     TABLE_ARN=$(aws dynamodb describe-table --table-name ${TABLE_NAME} --query 'Table.TableArn' --output text ${CLI_PARAMS[@]} 2> /dev/null)
@@ -285,7 +288,7 @@ function deployFanout {
       fi
     fi
 
-    FUNCTION_ARN=$(aws lambda "create-function" --function-name $FUNCTION_NAME --runtime nodejs4.3 --description "This is an Amazon Kinesis and Amazon DynamoDB Streams fanout function, look at $TABLE_NAME DynamoDB table for configuration" --handler fanout.handler --role $EXEC_ROLE_ARN --memory-size $MEMORY_SIZE --timeout $TIMEOUT --zip-file fileb://fanout.zip ${VPC_PARAMS[@]} --query 'FunctionArn' --output text ${CLI_PARAMS[@]})
+    FUNCTION_ARN=$(aws lambda "create-function" --function-name $FUNCTION_NAME --runtime nodejs4.3 --description "This is an Amazon Kinesis and Amazon DynamoDB Streams fanout function, look at $TABLE_NAME DynamoDB table for configuration" --handler fanout.handler --role $EXEC_ROLE_ARN --environment Variables={TABLE_NAME=$TABLE_NAME} --memory-size $MEMORY_SIZE --timeout $TIMEOUT --zip-file fileb://fanout.zip ${VPC_PARAMS[@]} --query 'FunctionArn' --output text ${CLI_PARAMS[@]})
     if [ -z "${FUNCTION_ARN}" ]; then
       echo "Unable to create specified AWS Lambda Function '${FUNCTION_NAME}'" 1>&2
       cd "$OLD"

@@ -453,7 +453,7 @@ function hookFanoutSource {
   if [ ! -z "$HOOK_ID" ] && [ "$HOOK_ID" != "None" ]; then
     echo "There is already a hook (ID: $HOOK_ID) for this source"
   else
-    aws lambda create-event-source-mapping --event-source-arn $SOURCE_ARN --function-name $FUNCTION_NAME --enabled --batch-size $BATCH_SIZE --starting-position $STARTING_POSITION ${CLI_PARAMS[@]}
+    aws lambda create-event-source-mapping --event-source-arn $SOURCE_ARN --function-name $FUNCTION_NAME --enabled --batch-size $BATCH_SIZE --starting-position $STARTING_POSITION ${CLI_PARAMS[@]} > /dev/null
   fi
 }
 

@@ -218,7 +218,7 @@ function deployFanout {
   if [ -f "fanout.zip" ]; then
     rm fanout.zip
   fi
-  npm install
+  npm install > /dev/null
   ZIP_EXE=$(which zip 2> /dev/null)
   if [ -z "$ZIP_EXE" ]; then
     WIN_7Z_EXE=$(which 7z 2> /dev/null)

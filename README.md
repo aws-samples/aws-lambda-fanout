@@ -1,6 +1,14 @@
-# Adaptations being made
+# IS24 remarks
+## Adaptations being made
 * ReadCapacityUnits for the targets table is reduced to 1
 * suppressed/corrected some output
+
+## Caveats
+* even though the scripting allows specifying a deviating targets table, the lambda itself doesn't; so just leave it at the default
+
+## Deployment
+Have a look at `cfn/deployment-role.yml` to get an idea what the `.fanout` script does.  
+Similarly, `cfn/execution-role.yml` demonstrates what permissions are required by the lambda itself.
 
 # aws-lambda-fanout
 

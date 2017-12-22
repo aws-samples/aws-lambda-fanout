@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: 'Demonstrates which permissions are required for the fanout lambda.'
+Parameters:
+  fanoutFunctionName:
+    Description: The fanout function's name
+    Type: String
+  dynamoDbArn:
+    Description: The ARN of the DDB of which's stream to read from
+    Type: String
+  topicArn:
+    Description: The ARN of the SNS topic to write to
+    Type: String
+Resources:
+  FanoutLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${fanoutFunctionName}'
+      RetentionInDays: 7
+
+  FanoutExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${fanoutFunctionName}-executionRole'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      Path: /
+      Policies:
+      - PolicyName: logToCloudWatch
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: !GetAtt FanoutLogGroup.Arn
+      - PolicyName: accessTargetsTable
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action: dynamodb:Query
+            Resource: !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${fanoutFunctionName}Targets'
+      # ################################################################################################################
+      # Depending on the source & destination the fanout should be attached to, more permissions will be required
+      # ################################################################################################################
+      - PolicyName: readStreamData
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - dynamodb:DescribeStream
+            - dynamodb:GetRecords
+            - dynamodb:GetShardIterator
+            - dynamodb:ListStreams
+            Resource: !Sub '${dynamoArn}/stream/*'
+      - PolicyName: publishToSns
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action: sns:Publish
+            Resource: !Ref topicArn

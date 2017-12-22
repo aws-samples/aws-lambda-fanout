@@ -1,3 +1,6 @@
+# Adaptation being made
+* ReadCapacityUnits for the targets table is reduced to 1
+
 # aws-lambda-fanout
 
 This function answers a need I have had multiple times, where I want to replicate data from an Amazon Kinesis Stream to another account or another region for processing, or to another environment such as development.

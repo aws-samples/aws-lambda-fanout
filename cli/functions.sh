@@ -235,7 +235,7 @@ function deployFanout {
   if [ -z "$FUNCTION_ARN" ]; then
     # Will be empty if we need to create the function
     if [ -z "$TABLE_ARN" ]; then
-      TABLE_ARN=$(aws dynamodb create-table --table-name ${TABLE_NAME} --attribute-definitions AttributeName=sourceArn,AttributeType=S AttributeName=id,AttributeType=S --key-schema AttributeName=sourceArn,KeyType=HASH AttributeName=id,KeyType=RANGE --provisioned-throughput ReadCapacityUnits=10,WriteCapacityUnits=1 --query 'TableDescription.TableArn' --output text ${CLI_PARAMS[@]} 2> /dev/null)
+      TABLE_ARN=$(aws dynamodb create-table --table-name ${TABLE_NAME} --attribute-definitions AttributeName=sourceArn,AttributeType=S AttributeName=id,AttributeType=S --key-schema AttributeName=sourceArn,KeyType=HASH AttributeName=id,KeyType=RANGE --provisioned-throughput ReadCapacityUnits=1,WriteCapacityUnits=1 --query 'TableDescription.TableArn' --output text ${CLI_PARAMS[@]} 2> /dev/null)
       echo "Created Amazon DynamoDB $TABLE_NAME with ARN: $TABLE_ARN"
     fi
   

@@ -5,6 +5,7 @@
 
 ## Caveats
 * even though the scripting allows specifying a deviating targets table, the lambda itself doesn't; so just leave it at the default
+* the DDB table and the lambda aren't tagged
 
 ## Deployment
 Have a look at [cfn/deployment-role.yml](cfn/deployment-role.yml) to get an idea what the `.fanout` script does.  

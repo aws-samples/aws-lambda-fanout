@@ -1,5 +1,6 @@
-# Adaptation being made
+# Adaptations being made
 * ReadCapacityUnits for the targets table is reduced to 1
+* suppressed/corrected some output
 
 # aws-lambda-fanout
 

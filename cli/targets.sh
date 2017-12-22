@@ -464,7 +464,7 @@ function unhookFanoutSource {
   if [ -z "$HOOK_ID" ] || [ "$HOOK_ID" == "None" ]; then
     echo "There is no hook for this source"
   else
-    aws lambda delete-event-source-mapping --uuid $HOOK_ID ${CLI_PARAMS[@]}
+    aws lambda delete-event-source-mapping --uuid $HOOK_ID ${CLI_PARAMS[@]} > /dev/null
   fi
 }
 
@@ -482,7 +482,7 @@ function setHookFanoutSourceState {
   if [ -z "$HOOK_ID" ] || [ "$HOOK_ID" == "None" ]; then
     echo "There is no hook for this source"
   else
-    aws lambda update-event-source-mapping --uuid $HOOK_ID $ENABLE_PARAM ${CLI_PARAMS[@]}
+    aws lambda update-event-source-mapping --uuid $HOOK_ID $ENABLE_PARAM ${CLI_PARAMS[@]} > /dev/null
   fi
 }
 

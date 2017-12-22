@@ -309,7 +309,8 @@ function deployFanout {
 ## Destroys a fanout function and its associated Amazon DynamoDB table
 function destroyFanout {
   aws dynamodb delete-table --table-name ${TABLE_NAME} ${CLI_PARAMS[@]} > /dev/null
+  echo "Deleted Amazon DynamoDB $TABLE_NAME"
   aws lambda "delete-function" --function-name ${FUNCTION_NAME} ${CLI_PARAMS[@]} > /dev/null
-  echo "Please check for the AWS IAM Role, we did not delete this"
+  echo "Deleted AWS Lambda Function $FUNCTION_NAME"
 }
 

@@ -66,7 +66,7 @@ Each `target` is defined by a set of parameters, stored in an Amazon DynamoDB ta
 * `role`        (String)  [optional]: for cross-account roles: you can specify the role ARN that will be assumed
 * `externalId`  (String)  [optional]: for cross-account roles: you can specify an external Id for the STS:AssumeRole call 
 * `region`      (String)  [optional]: for cross-region calls, you can specify the region name
-* `collapse`    (String)  [optional]: for AWS IoT, Amazon SQS and Amazon SNS, defines how the messages should be collapsed, if at all (none, JSON, concat, concat-b64; default: JSON)
+* `collapse`    (String)  [optional]: for AWS IoT, Amazon SQS and Amazon SNS, defines how the messages should be collapsed, if at all (none, JSON, concat, concat-b64, extract; default: none)
 * `parallel`    (Boolean) [optional]: indicates if we should process sending these messages in parallel. Warning: this may break in-shard ordering for Amazon Kinesis (default true)
 * `convertDDB`  (Boolean) [optional]: for Amazon DynamoDB Streams messages, converts the DDB objects to plain Javascript objects
 * `deaggregate` (Boolean) [optional]: for Amazon Kinesis Streams messages, deserializes KPL (protobuf-based) messages

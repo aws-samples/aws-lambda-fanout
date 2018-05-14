@@ -350,8 +350,8 @@ function readObjectProperties {
     doHelp
     exit -1
   fi
-  if [ ! -z "${COLLAPSE}" ] && [ "${COLLAPSE}" != "none" ] && [ "${COLLAPSE}" != "JSON" ] && [ "${COLLAPSE}" != "concat" ] && [ "${COLLAPSE}" != "concat-b64" ]; then
-    echo "readObjectProperties: invalid property --collapse $COLLAPSE, must be one of (none, JSON, concat, concat-b64)" 1>&2
+  if [ ! -z "${COLLAPSE}" ] && [ "${COLLAPSE}" != "none" ] && [ "${COLLAPSE}" != "JSON" ] && [ "${COLLAPSE}" != "concat" ] && [ "${COLLAPSE}" != "concat-b64" ] && [ "${COLLAPSE}" != "extract" ]; then
+    echo "readObjectProperties: invalid property --collapse $COLLAPSE, must be one of (none, JSON, concat, concat-b64, extract)" 1>&2
     doHelp
     exit -1
   fi

@@ -1,56 +1,56 @@
 {
     "author": {
-        "email": "lepine@amazon.fr", 
+        "email": "lepine@amazon.fr",
         "name": "Julien Lepine"
-    }, 
+    },
     "bugs": {
-        "email": "lepine@amazon.fr", 
+        "email": "lepine@amazon.fr",
         "url": "http://github.com/awslabs/aws-lambda-fanout/issues"
-    }, 
+    },
     "dependencies": {
         "aws-kinesis-agg": "2.2.2",
         "async": "1.5.2"
-    }, 
-    "description": "An Amazon Kinesis Streams and Amazon DynamoDB Streams pipeline written for AWS Lambda", 
-    "scripts" : {
+    },
+    "description": "An Amazon Kinesis Streams and Amazon DynamoDB Streams pipeline written for AWS Lambda",
+    "scripts": {
         "test": "mocha"
     },
     "devDependencies": {
         "mocha": "2.4.5",
         "aws-sdk": "2.2.19"
-    }, 
+    },
     "files": [
-	"lib",
-        "fanout.js", 
-        "cli/awscli.sh", 
-        "cli/functions.sh", 
-        "cli/help.sh", 
-        "cli/targets.sh", 
-        "fanout", 
-        "LICENSE", 
+        "lib",
+        "fanout.js",
+        "cli/awscli.sh",
+        "cli/functions.sh",
+        "cli/help.sh",
+        "cli/targets.sh",
+        "fanout",
+        "LICENSE",
         "README.md"
-    ], 
-    "homepage": "http://github.com/awslabs/aws-lambda-fanout", 
+    ],
+    "homepage": "http://github.com/awslabs/aws-lambda-fanout",
     "keywords": [
-        "amazon", 
-        "kinesis", 
-        "dynamodb", 
-        "sqs", 
-        "sns", 
-        "elasticache", 
-        "elasticsearch", 
-        "iot", 
-        "memcached", 
-        "redis", 
-        "firehose", 
+        "amazon",
+        "kinesis",
+        "dynamodb",
+        "sqs",
+        "sns",
+        "elasticache",
+        "elasticsearch",
+        "iot",
+        "memcached",
+        "redis",
+        "firehose",
         "lambda"
-    ], 
-    "license": "SEE LICENSE IN LICENSE.txt", 
-    "main": "./fanout.js", 
-    "name": "aws-lambda-fanout", 
+    ],
+    "license": "SEE LICENSE IN LICENSE.txt",
+    "main": "./fanout.js",
+    "name": "aws-lambda-fanout",
     "repository": {
-        "type": "git", 
+        "type": "git",
         "url": "http://github.com/awslabs/aws-lambda-fanout"
-    }, 
+    },
     "version": "1.0.0"
 }

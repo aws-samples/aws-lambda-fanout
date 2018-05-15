@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: 'Demonstrates which permissions are required for the ./fanout deploy, register & hook commands to work.
+              This assumes the fanout function will be named like the stack name.'
+Parameters:
+  assumeRolePrincipalArn:
+    Description: The ARN of the IAM role that may assume this role
+    Type: String
+  fanoutExecutionRoleArn:
+    Description: The ARN of the Lambda's execution role
+    Type: String
+  dynamoDbArn:
+    Description: The ARN of the DDB to which's stream to register to
+    Type: String
+Resources:
+  FanoutDeploymentRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-deployRole'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            AWS: !Ref assumeRolePrincipalArn
+          Action: sts:AssumeRole
+      Path: /
+      Policies:
+      - PolicyName: manageTargetsTable
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - dynamodb:CreateTable
+            - dynamodb:DeleteTable
+            - dynamodb:DescribeTable
+            - dynamodb:PutItem
+            Resource: !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${AWS::StackName}Targets'
+      - PolicyName: manageFanoutLambda
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - lambda:CreateFunction
+            - lambda:DeleteFunction
+            - lambda:GetFunction
+            - lambda:UpdateFunctionCode # this is required if the deploy is called repeatedly
+            Resource: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}'
+      - PolicyName: inspectEventSourceMapping
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action: lambda:ListEventSourceMappings
+            Resource: '*'
+      - PolicyName: manageEventSourceMapping
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - lambda:CreateEventSourceMapping
+            - lambda:DeleteEventSourceMapping
+            Resource: '*'
+            Condition:
+              StringEquals:
+               lambda:FunctionArn: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}'
+      - PolicyName: passRoleToLambda
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action: iam:PassRole
+            Resource: !Ref fanoutExecutionRoleArn
+      # ################################################################################################################
+      # Depending on the source & destination the fanout should be attached to, more permissions may be required
+      # ################################################################################################################
+      - PolicyName: registerAtDynamoDbStream
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action: dynamodb:ListStreams
+            Resource: !Sub '${dynamoDbArn}/stream/*'

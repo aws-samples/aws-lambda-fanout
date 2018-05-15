@@ -218,7 +218,7 @@ function deployFanout {
   if [ -f "fanout.zip" ]; then
     rm fanout.zip
   fi
-  npm install
+  npm install > /dev/null
   ZIP_EXE=$(which zip 2> /dev/null)
   if [ -z "$ZIP_EXE" ]; then
     WIN_7Z_EXE=$(which 7z 2> /dev/null)
@@ -235,7 +235,7 @@ function deployFanout {
   if [ -z "$FUNCTION_ARN" ]; then
     # Will be empty if we need to create the function
     if [ -z "$TABLE_ARN" ]; then
-      TABLE_ARN=$(aws dynamodb create-table --table-name ${TABLE_NAME} --attribute-definitions AttributeName=sourceArn,AttributeType=S AttributeName=id,AttributeType=S --key-schema AttributeName=sourceArn,KeyType=HASH AttributeName=id,KeyType=RANGE --provisioned-throughput ReadCapacityUnits=10,WriteCapacityUnits=1 --query 'TableDescription.TableArn' --output text ${CLI_PARAMS[@]} 2> /dev/null)
+      TABLE_ARN=$(aws dynamodb create-table --table-name ${TABLE_NAME} --attribute-definitions AttributeName=sourceArn,AttributeType=S AttributeName=id,AttributeType=S --key-schema AttributeName=sourceArn,KeyType=HASH AttributeName=id,KeyType=RANGE --provisioned-throughput ReadCapacityUnits=1,WriteCapacityUnits=1 --query 'TableDescription.TableArn' --output text ${CLI_PARAMS[@]} 2> /dev/null)
       echo "Created Amazon DynamoDB $TABLE_NAME with ARN: $TABLE_ARN"
     fi
   
@@ -285,7 +285,7 @@ function deployFanout {
       fi
     fi
 
-    FUNCTION_ARN=$(aws lambda "create-function" --function-name $FUNCTION_NAME --runtime nodejs4.3 --description "This is an Amazon Kinesis and Amazon DynamoDB Streams fanout function, look at $TABLE_NAME DynamoDB table for configuration" --handler fanout.handler --role $EXEC_ROLE_ARN --memory-size $MEMORY_SIZE --timeout $TIMEOUT --zip-file fileb://fanout.zip ${VPC_PARAMS[@]} --query 'FunctionArn' --output text ${CLI_PARAMS[@]})
+    FUNCTION_ARN=$(aws lambda "create-function" --function-name $FUNCTION_NAME --runtime nodejs8.10 --description "This is an Amazon Kinesis and Amazon DynamoDB Streams fanout function, look at $TABLE_NAME DynamoDB table for configuration" --handler fanout.handler --role $EXEC_ROLE_ARN --memory-size $MEMORY_SIZE --timeout $TIMEOUT --zip-file fileb://fanout.zip ${VPC_PARAMS[@]} --query 'FunctionArn' --output text ${CLI_PARAMS[@]})
     if [ -z "${FUNCTION_ARN}" ]; then
       echo "Unable to create specified AWS Lambda Function '${FUNCTION_NAME}'" 1>&2
       cd "$OLD"
@@ -309,7 +309,8 @@ function deployFanout {
 ## Destroys a fanout function and its associated Amazon DynamoDB table
 function destroyFanout {
   aws dynamodb delete-table --table-name ${TABLE_NAME} ${CLI_PARAMS[@]} > /dev/null
+  echo "Deleted Amazon DynamoDB $TABLE_NAME"
   aws lambda "delete-function" --function-name ${FUNCTION_NAME} ${CLI_PARAMS[@]} > /dev/null
-  echo "Please check for the AWS IAM Role, we did not delete this"
+  echo "Deleted AWS Lambda Function $FUNCTION_NAME"
 }
 

@@ -129,6 +129,7 @@ function readFunctionConfigParams {
   MEMORY_SIZE=128
   TIMEOUT=30
   SECURITY_GROUPS=
+  RUNTIME=nodejs4.3
 
   while [ $# -ne 0 ]; do
     CODE=$1
@@ -183,6 +184,15 @@ function readFunctionConfigParams {
         shift
       else
         echo "readFunctionConfigParams: You must specify a memory limit in MiB for parameter $CODE" 1>&2
+        doHelp
+        exit -1
+      fi
+    elif [ "$CODE" == "--runtime" ]; then
+      if [ $# -ne 0 ]; then
+        RUNTIME=$1
+        shift
+      else
+        echo "readFunctionConfigParams: You must specify a runtime environment of the Lambda function for parameter $CODE" 1>&2
         doHelp
         exit -1
       fi
@@ -285,7 +295,7 @@ function deployFanout {
       fi
     fi
 
-    FUNCTION_ARN=$(aws lambda "create-function" --function-name $FUNCTION_NAME --runtime nodejs8.10 --description "This is an Amazon Kinesis and Amazon DynamoDB Streams fanout function, look at $TABLE_NAME DynamoDB table for configuration" --handler fanout.handler --role $EXEC_ROLE_ARN --memory-size $MEMORY_SIZE --timeout $TIMEOUT --zip-file fileb://fanout.zip ${VPC_PARAMS[@]} --query 'FunctionArn' --output text ${CLI_PARAMS[@]})
+    FUNCTION_ARN=$(aws lambda "create-function" --function-name $FUNCTION_NAME --runtime $RUNTIME --description "This is an Amazon Kinesis and Amazon DynamoDB Streams fanout function, look at $TABLE_NAME DynamoDB table for configuration" --handler fanout.handler --role $EXEC_ROLE_ARN --memory-size $MEMORY_SIZE --timeout $TIMEOUT --zip-file fileb://fanout.zip ${VPC_PARAMS[@]} --query 'FunctionArn' --output text ${CLI_PARAMS[@]})
     if [ -z "${FUNCTION_ARN}" ]; then
       echo "Unable to create specified AWS Lambda Function '${FUNCTION_NAME}'" 1>&2
       cd "$OLD"
@@ -294,6 +304,14 @@ function deployFanout {
     echo "Created AWS Lambda Function $FUNCTION_NAME with ARN: $FUNCTION_ARN"
   else
     FUNCTION_ARN=$(aws lambda update-function-code --function-name ${FUNCTION_NAME} --zip-file fileb://fanout.zip --query 'FunctionArn' --output text ${CLI_PARAMS[@]})
+    if [ -z "${FUNCTION_ARN}" ]; then
+      echo "Unable to update code of specified AWS Lambda Function '${FUNCTION_NAME}'" 1>&2
+      cd "$OLD"
+      exit -1
+    fi
+    echo "Updated code of AWS Lambda Function $FUNCTION_NAME with ARN: $FUNCTION_ARN"
+
+    FUNCTION_ARN=$(aws lambda update-function-configuration --function-name ${FUNCTION_NAME} --runtime $RUNTIME --query 'FunctionArn' --output text ${CLI_PARAMS[@]})
     if [ -z "${FUNCTION_ARN}" ]; then
       echo "Unable to update specified AWS Lambda Function '${FUNCTION_NAME}'" 1>&2
       cd "$OLD"

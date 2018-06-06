@@ -281,6 +281,7 @@ function readObjectProperties {
   PARALLEL=
   CONVERT_DDB=
   DEAGGREGATE=
+  APPEND_NEWLINES=
 
   while [ $# -ne 0 ]; do
     CODE=$1
@@ -330,6 +331,15 @@ function readObjectProperties {
         doHelp
         exit -1
       fi
+    elif [ "$CODE" == "--append-newlines" ]; then
+      if [ $# -ne 0 ]; then
+        APPEND_NEWLINES=$1
+        shift
+      else
+        echo "readObjectProperties: You must specify a value for parameter $CODE" 1>&2
+        doHelp
+        exit -1
+      fi
     elif [[ "$CODE" =~ ^--.* ]]; then
       PASSTHROUGH+=($CODE)
       if [ $# -ne 0 ]; then
@@ -367,6 +377,11 @@ function readObjectProperties {
   fi
   if [ ! -z "${DEAGGREGATE}" ] && [ "${DEAGGREGATE}" != "true" ] && [ "${DEAGGREGATE}" != "false" ]; then
     echo "readObjectProperties: invalid boolean property --deaggregate $DEAGGREGATE, must be one of (true, false)" 1>&2
+    doHelp
+    exit -1
+  fi
+  if [ ! -z "${APPEND_NEWLINES}" ] && [ "${APPEND_NEWLINES}" != "true" ] && [ "${APPEND_NEWLINES}" != "false" ]; then
+    echo "readObjectProperties: invalid boolean property --append-newlines $APPEND_NEWLINES, must be one of (true, false)" 1>&2
     doHelp
     exit -1
   fi
@@ -436,6 +451,9 @@ function buildObject {
   fi
   if [ ! -z "${DEAGGREGATE}" ]; then
     appendJsonProperty "$1" "deaggregate" "{\"BOOL\":${DEAGGREGATE}}"
+  fi
+  if [ ! -z "${APPEND_NEWLINES}" ]; then
+    appendJsonProperty "$1" "appendNewlines" "{\"BOOL\":${APPEND_NEWLINES}}"
   fi
 }
 

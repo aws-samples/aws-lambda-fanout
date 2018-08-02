@@ -313,6 +313,15 @@ function deployFanout {
     fi
     echo "Updated code of AWS Lambda Function $FUNCTION_NAME with ARN: $FUNCTION_ARN"
 
+    if [ -z "$EXEC_ROLE_ARN" ]; then
+      if [ -z "$EXEC_ROLE_NAME" ]; then
+        EXEC_ROLE_NAME=${FUNCTION_NAME}Role
+      fi
+
+      aws iam put-role-policy --role-name $EXEC_ROLE_NAME --policy-name Metrics --policy-document '{"Version": "2012-10-17", "Statement": [{"Action": ["cloudwatch:PutMetricData"], "Resource": ["*"], "Effect": "Allow", "Sid": ""}]}' ${CLI_PARAMS[@]}
+      echo "Updated IAM role $EXEC_ROLE_NAME with Metrics policy"
+    fi
+
     FUNCTION_ARN=$(aws lambda update-function-configuration --function-name ${FUNCTION_NAME} --runtime $RUNTIME --query 'FunctionArn' --output text ${CLI_PARAMS[@]})
     if [ -z "${FUNCTION_ARN}" ]; then
       echo "Unable to update specified AWS Lambda Function '${FUNCTION_NAME}'" 1>&2

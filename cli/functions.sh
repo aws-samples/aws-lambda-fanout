@@ -268,12 +268,14 @@ function deployFanout {
         aws iam attach-role-policy --role-name $EXEC_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaDynamoDBExecutionRole ${CLI_PARAMS[@]}
         aws iam attach-role-policy --role-name $EXEC_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaKinesisExecutionRole ${CLI_PARAMS[@]}
         aws iam attach-role-policy --role-name $EXEC_ROLE_NAME --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole ${CLI_PARAMS[@]}
+        aws iam put-role-policy --role-name $EXEC_ROLE_NAME --policy-name Metrics --policy-document '{"Version": "2012-10-17", "Statement": [{"Action": ["cloudwatch:PutMetricData"], "Resource": ["*"], "Effect": "Allow", "Sid": ""}]}' ${CLI_PARAMS[@]}
         aws iam put-role-policy --role-name $EXEC_ROLE_NAME --policy-name ReadConfiguration --policy-document '{"Version": "2012-10-17", "Statement": [{"Action": ["dynamodb:Query"], "Resource": ["'$TABLE_ARN'"], "Effect": "Allow"}]}' ${CLI_PARAMS[@]}
         aws iam put-role-policy --role-name $EXEC_ROLE_NAME --policy-name PublishData --policy-document '{"Version": "2012-10-17", "Statement": [{"Action": ["sts:AssumeRole","kinesis:PutRecord*","sqs:SendMessage*","sns:Publish","firehose:PutRecordBatch","iot:Publish*","lambda:Invoke*","es:ESHttpPost"], "Resource": ["*"], "Effect": "Allow", "Sid": ""}]}' ${CLI_PARAMS[@]}
         echo "Created AWS IAM Role $EXEC_ROLE_NAME with ARN: $EXEC_ROLE_ARN"
         echo "... Sleeping for 10 seconds to ensure the role has been propagated ..."
         sleep 10
       fi
+
     else
       EXEC_ROLE_NAME=$( echo "$EXEC_ROLE_ARN" | sed -E -n 's#^arn:aws:iam::role/([a-zA-Z0-9+=,.@_-]{1,64})$#\1#p' )
       if [ ! -z "$EXEC_ROLE_NAME" ]; then

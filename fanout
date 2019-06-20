@@ -17,6 +17,7 @@
 #
 # This script is the main script for the command line utility
 #
+set -e
 
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink

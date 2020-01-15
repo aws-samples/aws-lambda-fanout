@@ -149,7 +149,7 @@ The `deploy` command creates the `fanout function` and supporting resources (AWS
 * `--exec-role <fanoutRole>` (optional) specify the AWS IAM Role to use for the `fanout function`. The role is created if it does not exist.
     * You can specify the role by ARN and avoid role detection and creation by using `--exec-role-arn <arn:aws:iam::0123456789abcdef::role/fanoutRole>`
 * `--memory <128>` (optional, default 128) specify the amount of memory (in MiB) to use for the function
-* `--runtime <nodejs8.10>` (optional, default `nodejs8.10`) specify the runtime environment for the Lambda function
+* `--runtime <nodejs10.x>` (optional, default `nodejs10.x`) specify the runtime environment for the Lambda function
 * `--timeout <30>` (optional, default 30) specify the timeout of the function (in seconds)
 
 

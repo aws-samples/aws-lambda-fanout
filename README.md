@@ -190,31 +190,31 @@ The `register <type>` command creates a new mapping for an existing `fanout func
     * When `--source` is used, you must specify `--source-type` as well
 * `--id <mapping-id>` (required) specify the identifier of this mapping
 * `--destination <name>` (optional) where name depends on the provider type:
-    * `./fanout create sns`: 
+    * `./fanout register sns`: 
         * name of the target topic, the CLI will search for the topic in the specified region
         * ARN of the target topic, detection will be deactivated
-    * `./fanout create sqs`:
+    * `./fanout register sqs`:
         * name of the target queue, the CLI will search for the queue in the specified region
         * ARN of the target queue, detection will be deactivated
-    * `./fanout create es`:
+    * `./fanout register es`:
         * name of the target domain, the CLI will search for the endpoint in the specified region, you will need to specify the `--index` parameter
         * Composite string containing the FQDN of the target Amazon Elasticache Service domain endpoint, followed by '#' then the storage specification   'doctype/index'
-    * `./fanout create kinesis`:
+    * `./fanout register kinesis`:
         * name of the target stream, the CLI will search for the stream in the specified region
         * ARN of the target stream, detection will be deactivated
-    * `./fanout create firehose`:
+    * `./fanout register firehose`:
         * name of the target stream, the CLI will search for the stream in the specified region
         * ARN of the target stream, detection will be deactivated
-    * `./fanout create iot`:
+    * `./fanout register iot`:
         * name of the target topic
         * Composite string containing the FQDN of the target Amazon IoT endpoint (specific per account / region), followed by '#' then the MQTT Topic Name
-    * `./fanout create lambda`:
+    * `./fanout register lambda`:
         * name of the target function, the CLI will search for the function in the specified region
         * ARN of the target topic, detection will be deactivated
-    * `./fanout create memcached`:
+    * `./fanout register memcached`:
         * name of the target cluster, the CLI will search for the function in the specified region
         * FQDN of the target cluster endpoint, detection will be deactivated
-    * `./fanout create redis`:
+    * `./fanout register redis`:
         * name of the target cluster, the CLI will search for the function in the specified region
         * FQDN of the target primary endpoint, detection will be deactivated
 * `--index <doctype/index>` (optional, required only for `es` with domain name) specify, for Amazon Elasticsearch Service, the index in the domain where the data will reside

@@ -96,12 +96,12 @@ describe('ddb-utils', function() {
       assert.strictEqual(DDB.parseDynamoDBPropertyValue({ N: "-1000.1" }), -1000.1);
       assert.strictEqual(DDB.parseDynamoDBPropertyValue({ BOOL: true }), true);
       assert.strictEqual(DDB.parseDynamoDBPropertyValue({ BOOL: false }), false);
-      assert.strictEqual(DDB.parseDynamoDBPropertyValue({ B: "YjY0VmFs" }), new Buffer("b64Val").toString('base64'));
+      assert.strictEqual(DDB.parseDynamoDBPropertyValue({ B: "YjY0VmFs" }), Buffer.from("b64Val").toString('base64'));
     });
     it('should support SS, NS ans BS', function () {
       assert.deepStrictEqual(DDB.parseDynamoDBPropertyValue({ SS: [ "", "string1", "string2" ]}), [ "", "string1", "string2" ]);
       assert.deepStrictEqual(DDB.parseDynamoDBPropertyValue({ NS: [ "0", "1000.1", "-1000.1" ]}), [ 0, 1000.1, -1000.1 ]);
-      assert.deepStrictEqual(DDB.parseDynamoDBPropertyValue({ BS: [ "YjY0dmFs", "YjY0VmFs" ]}).map(function(t) { return t.toString() }), [ new Buffer("b64val").toString('base64'), new Buffer("b64Val").toString('base64') ]);
+      assert.deepStrictEqual(DDB.parseDynamoDBPropertyValue({ BS: [ "YjY0dmFs", "YjY0VmFs" ]}).map(function(t) { return t.toString() }), [ Buffer.from("b64val").toString('base64'), Buffer.from("b64Val").toString('base64') ]);
     });
     it('should support map and list', function () {
       assert.deepStrictEqual(DDB.parseDynamoDBPropertyValue({ M: { a: { NULL: true }, b: { S: "string1" }, c: { N: "1000.1" }, d: { BOOL: true } }}), { a: null, b: "string1", c: 1000.1, d: true });
